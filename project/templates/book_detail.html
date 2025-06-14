@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-4">
+    {% if book.cover %}
+      <img src="{{ url_for('uploads', filename=book.cover.filename) }}"
+           class="img-fluid rounded shadow">
+    {% endif %}
+  </div>
+
+  <div class="col-md-8">
+    <h2>{{ book.title }}</h2>
+    <p><strong>Автор:</strong> {{ book.author }}</p>
+    <p><strong>Издательство:</strong> {{ book.publisher }}, {{ book.year }}</p>
+    <p><strong>Жанры:</strong>
+       {{ book.genres | map(attribute='name') | join(', ') }}</p>
+    <p><strong>Объём:</strong> {{ book.pages }} стр.</p>
+    <hr>
+    <div class="markdown">{{ book.description_html | safe }}</div>
+  </div>
+</div>
+
+<hr>
+<h3>Рецензии</h3>
+
+{% if reviews %}
+  {% for r in reviews %}
+    <div class="card mb-3">
+      <div class="card-header">
+        {{ r.user.full_name }} &nbsp;—&nbsp; {{ r.rating }}/5
+
+        {# ——— кнопка «Удалить», видна администратору, модератору,
+           а также автору собственной рецензии ——— #}
+        {% if current_user.is_authenticated and
+              (current_user.role.name in ['administrator', 'moderator'] or
+               current_user.id == r.user_id) %}
+          <form action="{{ url_for('delete_review', review_id=r.id) }}"
+                method="post" class="d-inline float-end ms-2">
+            {# ↓ раскомментируйте строку, если глобально включён CSRF #}
+            {# <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> #}
+            <button type="submit"
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('Удалить эту рецензию?')">
+              Удалить
+            </button>
+          </form>
+        {% endif %}
+      </div>
+
+      <div class="card-body">
+        {{ r.text_html | safe }}
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">Пока нет одобренных рецензий.</p>
+{% endif %}
+
+{# —— кнопка «Написать рецензию», если пользователь ещё не писал —— #}
+{% if current_user.is_authenticated
+      and current_user.role.name in ['user', 'moderator', 'administrator']
+      and not user_review %}
+  <a href="{{ url_for('new_review', book_id=book.id) }}"
+     class="btn btn-primary mt-3">
+    Написать рецензию
+  </a>
+{% elif user_review %}
+  <div class="alert alert-info mt-3">
+    Вы уже оставили рецензию на эту книгу (статус — {{ user_review.status.description }}).
+  </div>
+{% endif %}
+{% endblock %}

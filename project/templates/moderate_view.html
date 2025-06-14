@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Рецензия{% endblock %}
+{% block content %}
+<h2>Рецензия на «{{ review.book.title }}»</h2>
+<p><strong>Пользователь:</strong> {{ review.user.full_name }}</p>
+<p><strong>Оценка:</strong> {{ review.rating }}</p>
+<p><strong>Дата:</strong> {{ review.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+<hr>
+<div class="mb-4">{{ review.text_html|safe }}</div>
+<form method="post" action="{{ url_for('approve', review_id=review.id) }}" style="display:inline-block;">
+  <button class="btn btn-success">Одобрить</button>
+</form>
+<form method="post" action="{{ url_for('reject', review_id=review.id) }}" style="display:inline-block;">
+  <button class="btn btn-danger">Отклонить</button>
+</form>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+
+  <div class="mb-3">
+    {{ form.title.label }} {{ form.title(class="form-control") }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.description.label }}
+    {{ form.description(class="form-control", rows=6, id="description") }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.year.label }} {{ form.year(class="form-control") }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.publisher.label }} {{ form.publisher(class="form-control") }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.author.label }} {{ form.author(class="form-control") }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.pages.label }} {{ form.pages(class="form-control") }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.genres.label }}
+    {{ form.genres(class="form-select", multiple=True) }}
+  </div>
+
+  {# поле «Обложка» выводим, только если НЕ disabled #}
+  {% set cover_disabled = form.cover.render_kw and form.cover.render_kw.get('disabled') %}
+  {% if not cover_disabled %}
+    <div class="mb-3">
+      {{ form.cover.label }} {{ form.cover(class="form-control") }}
+    </div>
+  {% endif %}
+
+  {{ form.submit(class="btn btn-success") }}
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  new EasyMDE({
+    element: document.getElementById('description'),
+    status: false,
+    forceSync: true
+  });
+});
+</script>
+{% endblock %}

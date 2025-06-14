@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<h2>Список книг</h2>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  {% for book in books.items %}
+  <div class="col">
+    <div class="card h-100">
+      {% if book.cover %}
+        <img src="{{ url_for('uploads', filename=book.cover.filename) }}" class="card-img-top">
+      {% endif %}
+      <div class="card-body">
+        <h5 class="card-title">{{ book.title }}</h5>
+        <p class="card-text">
+          <strong>Автор:</strong> {{ book.author }}<br>
+          <strong>Год:</strong> {{ book.year }}<br>
+          <strong>Жанры:</strong> {{ book.genres|map(attribute='name')|join(', ') }}<br>
+          <strong>Оценка:</strong> {{ book.avg_rating() or '—' }}<br>
+          <strong>Рецензий:</strong> {{ book.reviews|length }}
+        </p>
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('view_book', book_id=book.id) }}" class="btn btn-primary">Просмотр</a>
+          {% if current_user.is_authenticated and current_user.role.name in ['administrator','moderator'] %}
+            <a href="{{ url_for('edit_book', book_id=book.id) }}" class="btn btn-warning">Редактировать</a>
+          {% endif %}
+          {% if current_user.is_authenticated and current_user.role.name == 'administrator' %}
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ book.id }}">Удалить</button>
+            <div class="modal fade" id="deleteModal{{ book.id }}" tabindex="-1">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Удаление книги</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">Вы уверены, что хотите удалить книгу {{ book.title }}?</div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                    <form method="post" action="{{ url_for('delete_book', book_id=book.id) }}">
+                      <button type="submit" class="btn btn-danger">Да</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<nav class="mt-4">
+  <ul class="pagination">
+    {% if books.has_prev %}
+      <li class="page-item"><a class="page-link" href="{{ url_for('index', page=books.prev_num) }}">&laquo;</a></li>
+    {% endif %}
+    {% for p in books.iter_pages() %}
+      {% if p %}
+        <li class="page-item {% if p==books.page %}active{% endif %}"><a class="page-link" href="{{ url_for('index', page=p) }}">{{ p }}</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    {% if books.has_next %}
+      <li class="page-item"><a class="page-link" href="{{ url_for('index', page=books.next_num) }}">&raquo;</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% if current_user.is_authenticated and current_user.role.name == 'administrator' %}
+  <a class="btn btn-success" href="{{ url_for('add_book') }}">Добавить книгу</a>
+{% endif %}
+{% endblock %}

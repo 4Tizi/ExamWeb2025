@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Новая рецензия{% endblock %}
+
+{% block content %}
+<h2>Новая рецензия на «{{ book.title }}»</h2>
+
+<form method="post">
+  {{ form.hidden_tag() }}
+  <div class="mb-3">
+    {{ form.rating.label }} {{ form.rating(class="form-select") }}
+  </div>
+  <div class="mb-3">
+    {{ form.text.label }}
+    {{ form.text(class="form-control", rows=8, id="text") }}
+  </div>
+  {{ form.submit(class="btn btn-primary") }}
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const editor = new EasyMDE({
+    element: document.getElementById('text'),
+    status: false,
+    forceSync: true          // ← ДОБАВИТЬ, и можно убрать listener
+  });
+});
+</script>
+{% endblock %}
+
+

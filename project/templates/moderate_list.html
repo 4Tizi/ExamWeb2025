@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Модерация рецензий{% endblock %}
+{% block content %}
+<h2>Рецензии на рассмотрении</h2>
+<table class="table">
+  <thead><tr><th>Книга</th><th>Пользователь</th><th>Дата</th><th></th></tr></thead>
+  <tbody>
+    {% for r in reviews.items %}
+      <tr>
+        <td>{{ r.book.title }}</td>
+        <td>{{ r.user.full_name }}</td>
+        <td>{{ r.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+        <td><a class="btn btn-sm btn-primary" href="{{ url_for('moderation_view', review_id=r.id) }}">Рассмотреть</a></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<nav><ul class="pagination">
+  {% if reviews.has_prev %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('moderation', page=reviews.prev_num) }}">&laquo;</a></li>
+  {% endif %}
+  {% for p in reviews.iter_pages() %}
+    {% if p %}
+      <li class="page-item {% if p==reviews.page %}active{% endif %}"><a class="page-link" href="{{ url_for('moderation', page=p) }}">{{ p }}</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+    {% endif %}
+  {% endfor %}
+  {% if reviews.has_next %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('moderation', page=reviews.next_num) }}">&raquo;</a></li>
+  {% endif %}
+</ul></nav>
+{% endblock %}
